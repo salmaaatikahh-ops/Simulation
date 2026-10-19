@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>:root{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}</style>
+<title>Simulasi Kekekalan Energi Mekanik</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: follows the teacher's reference. Title and language switch, scene tabs, then a stage card beside an energy card, and a data table below. */
+:root{
+  --bg:#F3F5FA; --surface:#FFFFFF; --ink:#151C30; --muted:#5C6479; --line:#E3E7F0; --field:#EEF1F8;
+  --primary:#4251C9; --primaryfg:#FFFFFF; --focus:#4251C9;
+  --ep:#C2610C; --ek:#1B9A72; --em:#4251C9; --eth:#C23A7A; --note:#127C6A;
+  --f:"Figtree","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1322; --surface:#161D31; --ink:#E8ECF8; --muted:#98A2BC; --line:#29324A; --field:#1E2742;
+  --primary:#8391FF; --primaryfg:#0E1322; --focus:#8391FF;
+  --ep:#F0953F; --ek:#45D0A0; --em:#8F9BFF; --eth:#F07AB0; --note:#45D0B4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1322; --surface:#161D31; --ink:#E8ECF8; --muted:#98A2BC; --line:#29324A; --field:#1E2742;
+  --primary:#8391FF; --primaryfg:#0E1322; --focus:#8391FF;
+  --ep:#F0953F; --ek:#45D0A0; --em:#8F9BFF; --eth:#F07AB0; --note:#45D0B4; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:15px;line-height:1.5;
+  padding-block:24px 44px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+html[data-lang="en"] .id{display:none!important}
+html[data-lang="id"] .en{display:none!important}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+h1{margin:0;font-weight:800;font-size:clamp(26px,4.2vw,38px);line-height:1.1;letter-spacing:-.015em;text-wrap:balance}
+.lead{margin:8px 0 0;max-width:58ch;color:var(--muted);font-size:16px}
+h2{margin:0 0 12px;font-weight:700;font-size:20px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--ink);padding:11px 20px;font:600 15px var(--f);cursor:pointer}
+.seg button[aria-pressed="true"],.seg button[aria-selected="true"]{background:var(--primary);color:var(--primaryfg)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:880px){.layout{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;min-width:0}
+#stage{display:block;width:100%;height:clamp(280px,50vw,460px)}
+.sliders{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px;margin-top:10px}
+@media (max-width:560px){.sliders{grid-template-columns:minmax(0,1fr)}}
+.fld label{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-weight:500;margin-bottom:6px}
+.fld output{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.fld input[type=range]{width:100%;accent-color:var(--primary)}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:12px 20px;font:600 16px var(--f);cursor:pointer}
+.btn.primary{background:var(--primary);color:var(--primaryfg);border-color:var(--primary);font-weight:700}
+.btn:hover{filter:brightness(.97)}
+.reads{display:flex;gap:28px;margin-bottom:12px}
+.reads span{display:block;color:var(--muted);font-weight:500}
+.reads b{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
+.bars{display:flex;flex-direction:column;gap:12px}
+.brow{display:grid;grid-template-columns:minmax(96px,1.1fr) minmax(0,1.3fr) minmax(64px,.7fr);gap:10px;align-items:center}
+.brow output{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.track{height:22px;background:var(--field);border-radius:999px;overflow:hidden}
+.fill{height:100%;width:0;border-radius:999px}
+.msg{margin-top:16px;padding:14px 16px;border:1.5px solid var(--note);border-radius:12px;font-size:16px}
+.msg.loss{border-color:var(--eth)}
+.formula{margin:14px 0 0;color:var(--muted);font-size:14px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:520px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;white-space:nowrap}
+td{font-weight:500}
+.empty{padding:14px 0 4px;color:var(--muted)}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1><span class="id">Simulasi Kekekalan Energi Mekanik</span><span class="en">Conservation of Mechanical Energy Simulation</span></h1>
+      <p class="lead"><span class="id">Lepas benda atau roller coaster, lalu amati perubahan energi potensial, energi kinetik, dan energi mekanik. Sesuai LKM Fisika Kelas X.</span>
+        <span class="en">Release an object or a roller coaster, then watch potential, kinetic and mechanical energy change. Matches the Grade 10 Physics worksheet.</span></p>
+    </div>
+    <div class="seg" role="group" aria-label="Bahasa / Language">
+      <button id="lid" type="button" aria-pressed="true">Indonesia</button>
+      <button id="len" type="button" aria-pressed="false">English</button>
+    </div>
+  </header>
+
+  <div class="seg" role="tablist" style="align-self:flex-start;max-width:100%">
+    <button id="tFall" type="button" role="tab" aria-selected="true"><span class="id">Benda jatuh</span><span class="en">Falling object</span></button>
+    <button id="tCoaster" type="button" role="tab" aria-selected="false">Roller coaster</button>
+  </div>
+
+  <div class="layout">
+    <section class="card" aria-label="Simulasi">
+      <canvas id="stage" role="img" aria-label="Simulasi / Simulation"></canvas>
+      <div class="sliders">
+        <div class="fld" id="gMF"><label for="mF"><span id="lMF"></span><output id="oMF"></output></label><input id="mF" type="range" min="0.5" max="10" step="0.5" value="0.5"></div>
+        <div class="fld" id="gH"><label for="h"><span><span class="id">Ketinggian awal</span><span class="en">Initial height</span></span><output id="oH"></output></label><input id="h" type="range" min="5" max="40" step="1" value="20"></div>
+        <div class="fld" id="gC"><label for="c"><span><span class="id">Hambatan udara (c)</span><span class="en">Air resistance (c)</span></span><output id="oC"></output></label><input id="c" type="range" min="0" max="2" step="0.1" value="0"></div>
+        <div class="fld" id="gMC" hidden><label for="mC"><span><span class="id">Massa kereta</span><span class="en">Cart mass</span></span><output id="oMC"></output></label><input id="mC" type="range" min="100" max="800" step="50" value="400"></div>
+        <div class="fld" id="gMu" hidden><label for="mu"><span><span class="id">Gesekan lintasan (μ)</span><span class="en">Track friction (μ)</span></span><output id="oMu"></output></label><input id="mu" type="range" min="0" max="0.2" step="0.01" value="0"></div>
+        <div class="fld"><label for="spd"><span><span class="id">Kecepatan simulasi</span><span class="en">Simulation speed</span></span><output id="oSp"></output></label><input id="spd" type="range" min="0.2" max="2" step="0.1" value="0.6"></div>
+      </div>
+      <div class="ctrls">
+        <button id="bGo" class="btn primary" type="button"><span class="id">Lepaskan</span><span class="en">Release</span></button>
+        <button id="bPause" class="btn" type="button"><span class="id">Jeda</span><span class="en">Pause</span></button>
+        <button id="bReset" class="btn" type="button"><span class="id">Ulangi</span><span class="en">Restart</span></button>
+        <button id="bRec" class="btn" type="button"><span class="id">Rekam data</span><span class="en">Record data</span></button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="id">Energi</span><span class="en">Energy</span></h2>
+      <div class="reads">
+        <div><span><span class="id">Ketinggian (m)</span><span class="en">Height (m)</span></span><b id="rh"></b></div>
+        <div><span><span class="id">Kecepatan (m/s)</span><span class="en">Speed (m/s)</span></span><b id="rv"></b></div>
+      </div>
+      <div class="bars">
+        <div class="brow"><span><span class="id">Energi potensial</span><span class="en">Potential energy</span></span><div class="track"><div class="fill" id="fEp" style="background:var(--ep)"></div></div><output id="oEp"></output></div>
+        <div class="brow"><span><span class="id">Energi kinetik</span><span class="en">Kinetic energy</span></span><div class="track"><div class="fill" id="fEk" style="background:var(--ek)"></div></div><output id="oEk"></output></div>
+        <div class="brow"><span><span class="id">Energi mekanik</span><span class="en">Mechanical energy</span></span><div class="track"><div class="fill" id="fEm" style="background:var(--em)"></div></div><output id="oEm"></output></div>
+        <div class="brow"><span><span class="id">Energi termal</span><span class="en">Thermal energy</span></span><div class="track"><div class="fill" id="fEth" style="background:var(--eth)"></div></div><output id="oEth"></output></div>
+      </div>
+      <p class="msg" id="msg" aria-live="polite"></p>
+      <p class="formula"><span class="id">Ep = m·g·h, Ek = ½·m·v², Em = Ep + Ek, g = 10 m/s². Hambatan udara dan gesekan memakai model sederhana.</span>
+        <span class="en">Ep = m·g·h, Ek = ½·m·v², Em = Ep + Ek, g = 10 m/s². Air resistance and friction use simplified models.</span></p>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2><span class="id">Tabel data (salin ke LKM Kegiatan 4)</span><span class="en">Data table (copy to worksheet Activity 4)</span></h2>
+    <div class="tablewrap" id="tbl"></div>
+    <div class="ctrls" style="margin-top:12px"><button id="bClear" class="btn" type="button"><span class="id">Hapus data</span><span class="en">Clear data</span></button></div>
+  </section>
+</div>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+var lang='id';try{lang=localStorage.getItem('lang')||'id'}catch(e){}
+if(lang!=='en')lang='id';
+var T={
+ id:{keep:'Energi mekanik tetap. Berkurangnya Ep sama besar dengan bertambahnya Ek.',
+  lossF:'Ada hambatan udara, jadi sebagian energi mekanik berubah menjadi energi termal. Em berkurang, tetapi energi total (Em + Eth) tetap.',
+  lossC:'Ada gesekan, jadi sebagian energi mekanik berubah menjadi energi termal. Em berkurang, tetapi energi total (Em + Eth) tetap.',
+  landed:'Benda sudah menyentuh tanah. Ep = 0 dan seluruh Em yang tersisa menjadi Ek.',
+  landedLoss:'Benda sudah menyentuh tanah. Selisih energi dari awal berubah menjadi energi termal akibat hambatan udara.',
+  rest:'Kereta berhenti. Seluruh energi awal sudah menjadi energi termal akibat gesekan.',
+  massF:'Massa benda',empty:'Belum ada data. Tekan Rekam data saat benda bergerak.',max:'Tabel penuh (maksimum 12 baris).',eth:'Eter'},
+ en:{keep:'Mechanical energy stays constant. The decrease in Ep equals the increase in Ek.',
+  lossF:'There is air resistance, so part of the mechanical energy becomes thermal energy. Em decreases, but the total energy (Em + Eth) stays constant.',
+  lossC:'There is friction, so part of the mechanical energy becomes thermal energy. Em decreases, but the total energy (Em + Eth) stays constant.',
+  landed:'The object has reached the ground. Ep = 0 and all the remaining Em is Ek.',
+  landedLoss:'The object has reached the ground. The energy difference from the start became thermal energy through air resistance.',
+  rest:'The cart has stopped. All the initial energy has become thermal energy through friction.',
+  massF:'Object mass',empty:'No data yet. Press Record data while the object is moving.',max:'Table is full (maximum 12 rows).',eth:'Eth'}};
+function tr(k){return T[lang][k]}
+function fmt(n,d){if(d===undefined)d=1;return n.toLocaleString(lang==='id'?'id-ID':'en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}
+var G=10;
+
+/* ---- coaster track: symmetric valley, start on the slope at exactly 25 m ---- */
+var XS=8,HC=25/((1+Math.cos(2*Math.PI*XS/100))/2),N=1200,TX=[],TY=[],TS=[],SN=[],CS=[];
+for(var i=0;i<=N;i++){var x=100*i/N;TX.push(x);TY.push(HC*(1+Math.cos(2*Math.PI*x/100))/2);TS.push(i?TS[i-1]+Math.hypot(TX[i]-TX[i-1],TY[i]-TY[i-1]):0)}
+for(var j=0;j<=N;j++){var a=Math.max(0,j-1),b=Math.min(N,j+1),ds=TS[b]-TS[a];SN.push((TY[b]-TY[a])/ds);CS.push((TX[b]-TX[a])/ds)}
+var STOT=TS[N],S0=TS[Math.floor(XS/100*N)]+(XS/100*N-Math.floor(XS/100*N))*(TS[Math.floor(XS/100*N)+1]-TS[Math.floor(XS/100*N)]);
+function at(s){s=Math.min(Math.max(s,0),STOT);var lo=0,hi=N;while(hi-lo>1){var m=(lo+hi)>>1;if(TS[m]<=s)lo=m;else hi=m}
+ var f=(s-TS[lo])/((TS[hi]-TS[lo])||1),l=function(A){return A[lo]+(A[hi]-A[lo])*f};return{x:l(TX),y:l(TY),sn:l(SN),cs:l(CS)}}
+
+/* ---- state ---- */
+var S={scene:'fall',mF:0.5,h0:20,c:0,mC:400,mu:0,speed:0.6,t:0,running:false,done:false,s:S0,u:0,Eth:0,T:0,rows:[]};
+function fallD(t){var m=S.mF,c=S.c;if(c<1e-9)return{d:0.5*G*t*t,v:G*t};var k=c/m,vt=G/k,e=1-Math.exp(-k*t);return{d:vt*(t-e/k),v:vt*e}}
+function landTime(){if(S.c<1e-9)return Math.sqrt(2*S.h0/G);var hi=Math.sqrt(2*S.h0/G)+1;while(fallD(hi).d<S.h0)hi*=2;var lo=0;for(var i=0;i<50;i++){var mid=(lo+hi)/2;if(fallD(mid).d<S.h0)lo=mid;else hi=mid}return hi}
+function mass(){return S.scene==='fall'?S.mF:S.mC}
+function snap(){var m=mass();
+ if(S.scene==='fall'){var tt=Math.min(S.t,S.T),f=fallD(tt),h=Math.max(0,S.h0-f.d),E0=m*G*S.h0,Ep=m*G*h,Ek=0.5*m*f.v*f.v;
+  if(tt>=S.T){h=0;Ep=0;Ek=0.5*m*f.v*f.v}
+  return{h:h,v:f.v,Ep:Ep,Ek:Ek,Em:Ep+Ek,Eth:Math.max(0,E0-Ep-Ek),E0:E0}}
+ var p=at(S.s),E0c=m*G*25,Ep2=m*G*p.y,Em=E0c-S.Eth,Ek2=Math.max(0,Em-Ep2);
+ return{h:p.y,v:Math.sqrt(2*Ek2/m),Ep:Ep2,Ek:Ek2,Em:Ep2+Ek2,Eth:S.Eth,E0:E0c,pos:p}}
+function reset(){S.t=0;S.running=false;S.done=false;S.s=S0;S.u=0;S.Eth=0;S.T=S.scene==='fall'?landTime():0}
+function stepF(dt){S.t+=dt;if(S.t>=S.T){S.t=S.T;S.running=false;S.done=true}}
+function stepC(dt){var m=S.mC,E0=m*G*25,mu=S.mu;
+ var n=Math.max(1,Math.ceil(dt/0.003)),h=dt/n;
+ for(var i=0;i<n;i++){var p=at(S.s),a=-G*p.sn,fr=mu*G*p.cs;
+  if(Math.abs(S.u)<1e-6){if(Math.abs(a)<=fr){S.u=0;S.running=false;S.done=true;return}a-=Math.sign(a)*fr}else a-=Math.sign(S.u)*fr;
+  S.u+=a*h;var ds=S.u*h,ns=S.s+ds;if(ns<=0||ns>=STOT){ns=Math.min(Math.max(ns,0),STOT);S.u=0}
+  S.Eth+=m*fr*Math.abs(ds);S.s=ns;var q=at(ns),v2=2*(E0-m*G*q.y-S.Eth)/m;
+  if(v2<=0)S.u=0;else S.u=(S.u>=0?1:-1)*Math.sqrt(v2)}}
+
+/* ---- drawing ---- */
+var cv=$('#stage');
+function colors(){var d=getComputedStyle(document.documentElement),g=function(n){return d.getPropertyValue(n).trim()};
+ return{ink:g('--ink'),muted:g('--muted'),line:g('--line'),ep:g('--ep'),prim:g('--primary')}}
+function prep(){var r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));
+ if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}var x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return{x:x,W:r.width,H:r.height}}
+function drawFall(ctx,W,H,c,sn){
+ var amax=Math.max(5,Math.ceil(S.h0/5)*5),left=62,top=44,gy=H-26,sc=(gy-top)/amax;
+ ctx.font='500 15px Figtree,sans-serif';ctx.textBaseline='middle';ctx.lineWidth=1;
+ for(var q=0;q<=amax;q+=5){var y=gy-q*sc;ctx.strokeStyle=c.line;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(W-14,y);ctx.stroke();ctx.fillStyle=c.muted;ctx.textAlign='right';ctx.fillText(q+' m',left-12,y)}
+ var y0=gy-S.h0*sc;ctx.setLineDash([7,5]);ctx.strokeStyle=c.ep;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(left,y0);ctx.lineTo(W-14,y0);ctx.stroke();ctx.setLineDash([]);
+ var r=Math.min(30,11+S.mF*1.9),cx=left+(W-left-14)*0.5,by=gy-sn.h*sc;if(sn.h<=0)by=gy-r;else by=Math.min(by,gy-r);
+ ctx.fillStyle=c.ink;ctx.beginPath();ctx.arc(cx,Math.max(by,r+2),r,0,6.283);ctx.fill()}
+function drawCoaster(ctx,W,H,c,sn){
+ var lx=34,rx=W-34,top=34,gy=H-20,sx=(rx-lx)/100,sy=(gy-top)/HC;
+ var X=function(x){return lx+x*sx},Y=function(y){return gy-y*sy};
+ ctx.strokeStyle=c.line;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(lx-14,gy);ctx.lineTo(rx+14,gy);ctx.stroke();
+ ctx.font='500 15px Figtree,sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';
+ var ly=Y(25);ctx.fillStyle=c.muted;ctx.fillText('25 m',lx-14,ly+12);
+ ctx.setLineDash([7,5]);ctx.strokeStyle=c.ep;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(lx+44,ly);ctx.lineTo(rx+14,ly);ctx.stroke();ctx.setLineDash([]);
+ ctx.strokeStyle=c.ink;ctx.lineWidth=5;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();for(var i=0;i<=N;i+=4){var px=X(TX[i]),py=Y(TY[i]);if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py)}ctx.stroke();
+ var p=sn.pos,ang=Math.atan2(-p.sn*sy,p.cs*sx);
+ ctx.save();ctx.translate(X(p.x),Y(p.y));ctx.rotate(ang);
+ ctx.fillStyle=c.prim;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(-22,-27,44,21,4);else ctx.rect(-22,-27,44,21);ctx.fill();
+ ctx.fillStyle=c.ink;[-13,13].forEach(function(o){ctx.beginPath();ctx.arc(o,-4,4.5,0,6.283);ctx.fill()});ctx.restore()}
+function draw(){var o=prep(),c=colors(),sn=snap();o.x.clearRect(0,0,o.W,o.H);if(S.scene==='fall')drawFall(o.x,o.W,o.H,c,sn);else drawCoaster(o.x,o.W,o.H,c,sn)}
+
+/* ---- DOM ---- */
+function ui(){var sn=snap(),E0=sn.E0||1;
+ $('#rh').textContent=fmt(sn.h,1);$('#rv').textContent=fmt(sn.v,1);
+ [['Ep',sn.Ep],['Ek',sn.Ek],['Em',sn.Em],['Eth',sn.Eth]].forEach(function(a){$('#f'+a[0]).style.width=Math.max(0,Math.min(100,a[1]/E0*100))+'%';$('#o'+a[0]).textContent=fmt(a[1],0)+' J'});
+ var loss=(S.scene==='fall'?S.c>0:S.mu>0),key;
+ if(S.scene==='fall')key=S.done?(loss?'landedLoss':'landed'):(loss?'lossF':'keep');else key=S.done?'rest':(loss?'lossC':'keep');
+ var m=$('#msg');m.textContent=tr(key);m.className='msg'+(loss&&key!=='keep'?' loss':'')}
+function labels(){$('#lMF').textContent=tr('massF');$('#oMF').textContent=fmt(S.mF,1)+' kg';$('#oH').textContent=fmt(S.h0,0)+' m';$('#oC').textContent=fmt(S.c,1)+' kg/s';
+ $('#oMC').textContent=fmt(S.mC,0)+' kg';$('#oMu').textContent=fmt(S.mu,2);$('#oSp').textContent=fmt(S.speed,1)+'×'}
+function renderTable(){var el=$('#tbl'),h='<table><thead><tr><th>h (m)</th><th>v (m/s)</th><th>Ep (J)</th><th>Ek (J)</th><th>Em (J)</th><th>'+tr('eth')+' (J)</th></tr></thead><tbody>';
+ S.rows.forEach(function(r){h+='<tr><td>'+fmt(r.h,1)+'</td><td>'+fmt(r.v,1)+'</td><td>'+fmt(r.Ep,0)+'</td><td>'+fmt(r.Ek,0)+'</td><td>'+fmt(r.Em,0)+'</td><td>'+fmt(r.Eth,0)+'</td></tr>'});
+ el.innerHTML=h+'</tbody></table>'+(S.rows.length?'':'<p class="empty">'+tr('empty')+'</p>')}
+function setScene(s){S.scene=s;$('#tFall').setAttribute('aria-selected',s==='fall');$('#tCoaster').setAttribute('aria-selected',s==='coaster');
+ ['gMF','gH','gC'].forEach(function(i){$('#'+i).hidden=s!=='fall'});['gMC','gMu'].forEach(function(i){$('#'+i).hidden=s!=='coaster'});reset();labels()}
+function setLang(l){lang=l;try{localStorage.setItem('lang',l)}catch(e){}
+ document.documentElement.setAttribute('data-lang',l);document.documentElement.lang=l;
+ $('#lid').setAttribute('aria-pressed',l==='id');$('#len').setAttribute('aria-pressed',l==='en');labels();renderTable()}
+$('#lid').onclick=function(){setLang('id')};$('#len').onclick=function(){setLang('en')};
+$('#tFall').onclick=function(){setScene('fall')};$('#tCoaster').onclick=function(){setScene('coaster')};
+$('#mF').oninput=function(){S.mF=+this.value;reset();labels()};
+$('#h').oninput=function(){S.h0=+this.value;reset();labels()};
+$('#c').oninput=function(){S.c=+this.value;reset();labels()};
+$('#mC').oninput=function(){S.mC=+this.value;reset();labels()};
+$('#mu').oninput=function(){S.mu=+this.value;reset();labels()};
+$('#spd').oninput=function(){S.speed=+this.value;labels()};
+$('#bGo').onclick=function(){if(S.done)reset();S.running=true};
+$('#bPause').onclick=function(){S.running=false};
+$('#bReset').onclick=reset;
+$('#bRec').onclick=function(){if(S.rows.length>=12){$('#msg').textContent=tr('max');return}var n=snap();S.rows.push({h:n.h,v:n.v,Ep:n.Ep,Ek:n.Ek,Em:n.Em,Eth:n.Eth});renderTable()};
+$('#bClear').onclick=function(){S.rows=[];renderTable()};
+
+var last=0;
+function frame(ts){if(!last)last=ts;var dt=Math.min(0.05,(ts-last)/1000);last=ts;
+ if(S.running){if(S.scene==='fall')stepF(dt*S.speed);else stepC(dt*S.speed)}
+ draw();ui();requestAnimationFrame(frame)}
+setLang(lang);setScene('fall');renderTable();requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
